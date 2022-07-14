@@ -1,10 +1,29 @@
 import streamlit as st
+import datetime
+import calendar
 from sup_analysis import ana
 from sup_predection import pred
-st.set_page_config(page_title='Superstore')
+from streamlit_option_menu import option_menu
+st.set_page_config(page_title='Superstore', layout='wide')
 
 st.header("Superstore Sales Predictions & Analytics")
-sel = st.sidebar.radio("Select a Page",('Analysis', 'Predection'))
+currenttime = datetime.datetime.today()
+onlydate = currenttime.day
+onlymonth = currenttime.strftime("%b")
+onlyyear = currenttime.year
+onlyday = calendar.day_name[currenttime.weekday()]
+st.sidebar.info(f"""{onlyday} , {onlydate} {onlymonth} {onlyyear}""")
+
+with st.sidebar:
+    sel = option_menu(
+        menu_title="Main Menu",
+        options=["Analysis", "Predection"],
+        icons=["tv", "gear"],
+        menu_icon="cast",
+        #default_index=0,
+    )
+
+# sel = st.sidebar.radio("Select a Page",('Analysis', 'Predection'))
 
 if sel=='Analysis':
     ana()
