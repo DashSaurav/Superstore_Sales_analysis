@@ -35,8 +35,9 @@ def subcat_list(Customer_name):
 
 def ship_list(Customer_name):
     df = data[data["Customer Name"] == Customer_name]
+    df = df[['Ship Mode']]
     df = df.rename(columns = {'Ship Mode':'Order Mode Times'})
-    value = df['Order Mode Times'].unique()
+    value = df['Order Mode Times'].value_counts()
     return value
 
 def type_list(Customer_name):
@@ -45,6 +46,27 @@ def type_list(Customer_name):
     value = df['Segment'].unique()
     return value[0]
 
+def date_sale(Customer_name):
+    df = data[data["Customer Name"] == Customer_name]
+    df = df[['Order Date','Sales']]
+    df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+    df['year'] = df['Order Date'].dt.year
+    del df['Order Date']
+    value = df.groupby(["year"])['Sales'].sum()
+    return value
+
+def date_sale_month(Customer_name):
+    df = data[data["Customer Name"] == Customer_name]
+    df = df[['Order Date','Sales']]
+    df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+    d = df['Order Date']
+    df.groupby([d.dt.year.rename('Year'), d.dt.month.rename('Month')]).sum()
+    ym_id = d.apply("{:%Y-%m}".format).rename('Order Date')
+    value = df.groupby(ym_id).sum()
+    return value
+
+theme_neutral = {'bgcolor': '#f9f9f9','title_color': 'blue','content_color': 'blue'}
+
 def ana():
     sel = st.sidebar.radio("Select a Analysis Type",('By Name', 'By Products'))
 
@@ -52,20 +74,14 @@ def ana():
         col = st.columns(3)
         with col[1]:
             sel_name = st.selectbox("Select Customer Name", data["Customer Name"].unique())
-        with col[2]:
-            t = "<div> <br></div>"
-            st.markdown(t, unsafe_allow_html=True)
-            st.info(type_list(sel_name))
 
-        # st.write(sale_tot(sel_name))
-        theme_neutral = {'bgcolor': '#f9f9f9','title_color': 'blue','content_color': 'blue'}
-        # c1,c2,c3 = st.columns((0.5,1,0.5))
-        # with c2:
-        #     hc.info_card(title='Total Sale Amount in Rupees', content=sale_tot(sel_name),theme_override=theme_neutral)
-        
+        st.sidebar.write('Segement of',sel_name, 'is', type_list(sel_name))
+        st.sidebar.subheader('Customer Lifetime Value Metric')
+        st.sidebar.info(int(sale_tot(sel_name)*len(date_sale(sel_name))))
+
         col = st.columns(2)
         with col[0]:
-            st.write("**Category wise Purchase**")
+            st.write("**Category wise Total Purchase Amount in $**")
             val = amount_list(sel_name)
             st.write(val)
         with col[1]:
@@ -73,13 +89,9 @@ def ana():
             hc.info_card(title='Total Sale Amount in $', content=sale_tot(sel_name),theme_override=theme_neutral)
   
         
-        st.sidebar.write('**List of Item Purchased by**', str(sel_name))
-        val_list = cat_list(sel_name)
-        st.sidebar.dataframe(val_list)
-        # st.bar_chart(val_list)
         col = st.columns(2)
         with col[0]:
-            st.write("**Items Total Sale Amount**")
+            st.write("**Total Amount of each Item Bought**")
             st.bar_chart(subcat_list(sel_name))
 
         # fig1, ax1 = plt.subplots()
@@ -93,10 +105,15 @@ def ana():
 
         col = st.columns(2)
         with col[0]:
-            st.write('**Shiping Mode Prefered by**', str(sel_name))
-            ship_value = ship_list(sel_name)
-            st.write(ship_value)
+            st.write('**Year Wise Total Amount in $ by Customer**')
+            st.bar_chart(date_sale(sel_name))
+        with col[1]:
+            st.write('**Year-Month Distribution of Total Amount in $ by Customer**')
+            st.bar_chart(date_sale_month(sel_name))
 
+        st.write('**Shiping Mode Prefered by**', str(sel_name))
+        ship_value = ship_list(sel_name)
+        st.bar_chart(ship_value)
 
     elif sel=='By Products':
         st.sidebar.subheader('Analysis By Products')
