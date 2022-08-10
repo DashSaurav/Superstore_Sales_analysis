@@ -74,6 +74,13 @@ def date_sale_month(Customer_name):
     value = df.groupby(ym_id).sum()
     return value
 
+# pie chart function
+def pie_graph(Customer_name):
+    df = data[data["Customer Name"] == Customer_name]
+    df = df[['Ship Mode','Sales']]
+    value = df.groupby(["Ship Mode"])['Sales'].sum().reset_index()
+    return value
+
 theme_neutral = {'bgcolor': '#f9f9f9','title_color': 'blue','content_color': 'blue'}
 
 def ana():
@@ -124,28 +131,66 @@ def ana():
         ship_value = ship_list(sel_name)
         st.bar_chart(ship_value)
 
+        # tab1, tab2 = st.tabs(['Pie Chart','Radar Chart'])
+        # with tab1:
+        #     st.write('Pie Graph')
+        #     pp = pie_graph(sel_name)
+        #     fig1, ax1 = plt.subplots(figsize=(5, 2))
+        #     ax1.pie(pp['Sales'], labels=pp['Ship Mode'], startangle=90)
+        #     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        #     st.pyplot(fig1)
+        # with tab2:
+        #     st.write(pp)
+
     elif sel=='By Products':
         st.sidebar.subheader('Analysis By Products')
         prod_name = st.selectbox("Select a Category Name",data["Category"].unique())
-        
         def sale_prod(product):
             df = data[data["Category"] == product]
             value = sum(df["Sales"])
             return value
+        def prod_list(product):
+                df = data[data["Category"] == product]
+                df = df[['Product Name','Sales']]
+                df = df.rename(columns = {'Sales':'Amount'})
+                value = df.groupby(['Product Name'])['Amount'].sum().reset_index()
+                return value
+        def cat_prod_list(product):
+            df = data[data["Category"] == product]
+            df = df[['Sub-Category','Sales']]
+            df = df.rename(columns = {'Sales':'Amount'})
+            value = df.groupby(['Sub-Category'])['Amount'].sum()
+            return value
+        def cat_state_list(product):
+            df = data[data["Category"] == product]
+            df = df[['State','Sales']]
+            df = df.rename(columns = {'Sales':'Amount'})
+            value = df.groupby(['State'])['Amount'].sum()
+            return value
+        @st.cache
+        def cat_region_list(product):
+            df = data[data["Category"] == product]
+            df = df[['Region','Sales']]
+            df = df.rename(columns = {'Sales':'Amount'})
+            value = df.groupby(['Region'])['Amount'].sum()
+            return value
 
         st.sidebar.write('Total Sale Amount On', str(prod_name))
         st.sidebar.info(sale_prod(prod_name))
-
-        def prod_list(product):
-            df = data[data["Category"] == product]
-            df = df[['Product Name','Sales']]
-            df = df.rename(columns = {'Sales':'Amount'})
-            value = df.groupby(['Product Name'])['Amount'].sum().reset_index()
-            return value
-
-        st.write('Products Name List with Amount')
-        st.write(prod_list(prod_name))
-
+        
+        tab1, tab2, tab3, tab4 = st.tabs(['Product List','Category Sale Value','State Sale Value','Region Sale Value'])
+        with tab1:
+            st.write('Products Name List with Amount')
+            st.write(prod_list(prod_name))
+        with tab2:
+            st.write('Category wise Sale Total Amount')
+            st.bar_chart(cat_prod_list(prod_name))
+        with tab3:
+            st.write('State wise Category Sale Division')
+            st.bar_chart(cat_state_list(prod_name))
+        with tab4:
+            st.write('Region wise Sale Division')
+            st.bar_chart(cat_region_list(prod_name))
     elif sel=='Locations':
         sel_name = st.selectbox("Select Customer Name", data["Customer Name"].unique())
 
