@@ -75,13 +75,6 @@ def date_sale_month(Customer_name):
     value = df.groupby(ym_id).sum()
     return value
 
-# pie chart function
-def pie_graph(Customer_name):
-    df = data[data["Customer Name"] == Customer_name]
-    df = df[['Ship Mode','Sales']]
-    value = df.groupby(["Ship Mode"])['Sales'].sum().reset_index()
-    return value
-
 theme_neutral = {'bgcolor': '#f9f9f9','title_color': 'blue','content_color': 'blue'}
 
 def ana():
