@@ -9,6 +9,7 @@ import warnings
 from geopy.exc import GeocoderTimedOut
 from geopy.geocoders import Nominatim
 import plotly.express as px
+import matplotlib.pyplot as plt
 warnings.filterwarnings(action = "ignore")
 
 data = pd.read_csv("Superstore_sales_Data.csv")
@@ -128,19 +129,14 @@ def ana():
             st.bar_chart(date_sale_month(sel_name))
 
         st.write('**Shiping Mode Prefered by**', str(sel_name))
-        ship_value = ship_list(sel_name)
-        st.bar_chart(ship_value)
-
-        # tab1, tab2 = st.tabs(['Pie Chart','Radar Chart'])
-        # with tab1:
-        #     st.write('Pie Graph')
-        #     pp = pie_graph(sel_name)
-        #     fig1, ax1 = plt.subplots(figsize=(5, 2))
-        #     ax1.pie(pp['Sales'], labels=pp['Ship Mode'], startangle=90)
-        #     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-        #     st.pyplot(fig1)
-        # with tab2:
-        #     st.write(pp)
+        col = st.columns(2)
+        with col[0]:
+            ship_value = ship_list(sel_name)
+            st.bar_chart(ship_value, height=350)
+        plt.pie(ship_value.values, labels = ship_value.index, autopct='%1.1f%%', startangle=90)
+        plt.savefig('pie_graph.png')
+        with col[1]:
+            st.image('pie_graph.png')
 
     elif sel=='By Products':
         st.sidebar.subheader('Analysis By Products')
