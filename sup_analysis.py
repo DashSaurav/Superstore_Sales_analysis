@@ -10,6 +10,7 @@ from geopy.exc import GeocoderTimedOut
 from geopy.geocoders import Nominatim
 import plotly.express as px
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as p
 warnings.filterwarnings(action = "ignore")
 
 data = pd.read_csv("Superstore_sales_Data.csv")
@@ -75,6 +76,13 @@ def date_sale_month(Customer_name):
     value = df.groupby(ym_id).sum()
     return value
 
+# pie chart function
+def pie_graph(Customer_name):
+    df = data[data["Customer Name"] == Customer_name]
+    df = df[['Ship Mode','Sales']]
+    value = df.groupby(["Ship Mode"])['Sales'].sum().reset_index()
+    return value
+
 theme_neutral = {'bgcolor': '#f9f9f9','title_color': 'blue','content_color': 'blue'}
 
 def ana():
@@ -88,19 +96,20 @@ def ana():
         st.sidebar.write('Segement of',sel_name, 'is', type_list(sel_name))
         st.sidebar.subheader('Customer Lifetime Value Metric')
         st.sidebar.info(int(sale_tot(sel_name)*len(date_sale(sel_name))))
-
-        col = st.columns(2)
-        with col[0]:
-            st.write("**Category wise Total Purchase Amount in $**")
-            val = amount_list(sel_name)
-            st.write(val)
-        with col[1]:
-            # st.metric(label='Total Sale Amount',value=round(sale_tot(sel_name)))
-            hc.info_card(title='Total Sale Amount in $', content=sale_tot(sel_name),theme_override=theme_neutral)
+        
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(['Sale Amounts','Item Bought','Item Shipped','Year','Shipping Mode'])
+        with tab1:
+            col = st.columns(2)
+            with col[0]:
+                st.write("**Category wise Total Purchase Amount in $**")
+                val = amount_list(sel_name)
+                st.write(val)
+            with col[1]:
+                # st.metric(label='Total Sale Amount',value=round(sale_tot(sel_name)))
+                hc.info_card(title='Total Sale Amount in $', content=sale_tot(sel_name),theme_override=theme_neutral)
   
         
-        col = st.columns(2)
-        with col[0]:
+        with tab2:
             st.write("**Total Amount of each Item Bought**")
             st.bar_chart(subcat_list(sel_name))
 
@@ -108,28 +117,29 @@ def ana():
         # ax1.pie(subcat_list(sel_name).values, labels=subcat_list(sel_name).index, autopct='%1.1f%%',startangle=90)
         # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         # st.pyplot(fig1)
-
-        with col[1]:
+        with tab3:
             st.write('**Order Shiped to State**')
             st.bar_chart(state_list(sel_name))
 
-        col = st.columns(2)
-        with col[0]:
-            st.write('**Year Wise Total Amount in $ by Customer**')
-            st.bar_chart(date_sale(sel_name))
-        with col[1]:
-            st.write('**Year-Month Distribution of Total Amount in $ by Customer**')
-            st.bar_chart(date_sale_month(sel_name))
+        with tab4:
+            col = st.columns(2)
+            with col[0]:
+                st.write('**Year Wise Total Amount in $ by Customer**')
+                st.bar_chart(date_sale(sel_name))
+            with col[1]:
+                st.write('**Year-Month Distribution of Total Amount in $ by Customer**')
+                st.bar_chart(date_sale_month(sel_name))
 
-        st.write('**Shiping Mode Prefered by**', str(sel_name))
-        col = st.columns(2)
-        with col[0]:
-            ship_value = ship_list(sel_name)
-            st.bar_chart(ship_value, height=350)
-        plt.pie(ship_value.values, labels = ship_value.index, autopct='%1.1f%%', startangle=90)
-        plt.savefig('pie_graph.png')
-        with col[1]:
-            st.image('pie_graph.png')
+        with tab5:
+            st.write('**Shiping Mode Prefered by**', str(sel_name))
+            col = st.columns(2)
+            with col[0]:
+                ship_value = ship_list(sel_name)
+                st.bar_chart(ship_value, height=350)
+            with col[1]:
+                plt.pie(ship_value.values, labels = ship_value.index, autopct='%1.1f%%', startangle=90)
+                plt.savefig('pie_graph.png')
+                st.image('pie_graph.png')
 
     elif sel=='By Products':
         st.sidebar.subheader('Analysis By Products')
